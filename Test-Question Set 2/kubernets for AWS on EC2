@@ -1,0 +1,332 @@
+1. install awscli
+
+2. configure awscli
+
+install kops https://github.com/kubernetes/kops/releases/tag/1.12.2
+
+kops-windows-amd64
+
+
+install kubectl 
+
+Follow this document
+
+https://medium.com/containermind/how-to-create-a-kubernetes-cluster-on-aws-in-few-minutes-89dda10354f4
+
+Create a s3 bucket and enable versioning on this
+
+Create 2 envirnment variables
+
+export KOPS_CLUSTER_NAME=imesh.k8s.local
+export KOPS_STATE_STORE=s3://${bucket_name}
+
+PLease use set command
+
+create secret --name imesh.k8s.local sshpublickey admin -i D:\id_rsa.pub
+
+Create a cluster:
+
+kops create cluster node-count=2 node-size=t2.medium zones=us-east-1a name=${KOPS_CLUSTER_NAME}
+
+kops edit cluster --name ${KOPS_CLUSTER_NAME}
+
+kops update cluster --name ${KOPS_CLUSTER_NAME} --yes
+
+kops validate cluster
+
+please wait for 5-10 mins..this will create 1 master & 2 nodes servers
+
+Copy this yaml file & keep in safe location..
+
+https://raw.githubusercontent.com/kubernetes/dashboard/master/aio/deploy/recommended/kubernetes-dashboard.yaml
+
+name this yaml file as dashboard.yaml
+
+Run :
+
+kubectl apply -f d:\dashboard.yaml
+
+this will install a dashboard in master server...
+
+
+kops get secrets kube --type secret -oplaintext
+
+kops get secrets admin --type secret -oplaintext
+
+Note these 2 secret information...
+
+kubectl cluster-info
+
+https://<kubernetes-master-hostname>/ui --> Enter the ELB name
+
+
+https://api-imesh-k8s-local-d8ok51-1738749934.us-east-1.elb.amazonaws.com/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/#!/overview?namespace=default
+
+Enter 
+
+user : admin
+
+password is --> enter the token which is genarated
+
+To delete the Cluster :
+
+set set KOPS_STATE_STORE=s3://kbackuppublic
+kops delete cluster --name imesh.k8s.local --yes
+
+-----------------------------------------------------------------------------
+
+KUBERNETS important resources
+namespace
+
+pod
+
+service
+
+deployment
+
+replicasets
+
+persistencyvolume
+
+daemonset
+
+stateful set
+------------------------------------------------------------------------------------------------
+Commands:
+
+kubectl get nodes
+
+kubectl get pods
+
+TO create a deployment, please refer sample yaml file....Save it in d: drive with service.yaml
+--------------------------------------
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  replicas:  # tells deployment to run 2 pods matching the template
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.7.9
+        ports:
+        - containerPort: 80
+
+-------------------------------------------------
+
+
+kubectl apply -f <yaml files name> --> kubectl apply -f service.yaml
+
+for deleting the deployment
+
+kubectl delete -f app-nginx.yaml
+
+kubectl get pods -l app=nginx
+
+
+------------------------------------------------
+
+Service discovery
+
+if 2 services are running in same cluster, the service discovery is automatically...
+
+if it running outside, you need to proivde all the details of endpoint...
+
+Ref : https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/
+-------------------------------------------------------------------------
+Namespace:
+
+
+5 teams need to use the same cluster
+
+divide the cluster into multiple logical unit...
+kubectl get namespace
+
+kubectl create namespace sales
+
+kubectl get svc -n <namespace>
+
+
+kubectl apply -f <yaml>
+
+--------------------------------------
+
+Namespace
+
+5 teams need to use the same cluster
+
+divide the cluster into multiple logical unit...
+
+
+kubectl get namespace
+
+kubectl create namespace sales
+
+kubectl get svc -n <namespace>
+
+
+kubectl apply -f <yaml>
+
+
+------Storage---------------
+
+persistent volume
+persistent volume claim
+
+
+create a yaml file for creating persistent volume
+
+crete a foler in host path
+
+kubectl get pv --> to get list of Persisted volume
+kubectl get pvc --> persistedvolume claim
+
+kubectl apply -f <yaml>
+
+kubeectl describe pv <name>
+
+Second create the persisted volume claim
+
+create with the help of yaml
+
+read about accessmodes like readwriteonce
+
+then mount the volume to mysql container
+---------------------------------------------------------config map
+
+this is important
+
+Add the config as envrinment and file...for file you need to mont then use configmap..
+
+kind: configmap
+
+diffrences between configmap vs secrets
+
+best practice
+
+create a secret & store the secret in config map & then use it...
+
+----------------------------------------------------------------------
+
+secrets
+
+kind: secret
+
+mount the secret..
+
+
+------------------------------------------------------------------------
+
+enabling dynamic provision persistent volumes which will create volume dynamically(on fly)...
+
+
+for dynamic provision we need to use storageclass
+
+https://kubernetes.io/docs/concepts/storage/dynamic-provisioning/
+
+persistentvolumeclaim
+
+reclaim --> not to delete data..
+
+-----------------------------------------------------------------------------------------
+
+
+-----------------------------------------------------------------------------------------
+
+
+Stateful set
+used to deploy your stateful application...
+
+this is important
+
+this will not crete a random id for pods.
+
+the pods will create like web-01, web-02, web-03
+
+for stateless applications, use deployment
+---------------------------------------------------
+daemon set 
+
+run monitoring agent in all the nodes...
+
+this will create a new pod in all nodes & then collects the data. this will not install anything in the existing containers.
+
+
+
+----------------------------------------------------
+
+
+-------------------------------------------------
+to limit the max memory of cpu for a pod...
+
+resources:
+
+ requests:
+
+ memory
+
+ cpu
+-------------------------------------
+
+assigning pods to nodes
+
+i have 10 worker nodes, in it 5 have 32 gb & 5 have 8gb ...
+
+if you need, you have to deploy application to specfic node, then we use this...
+
+node selector
+
+kubectl label --help
+
+
+kubespray --> will help to convert kubernets 1.15 to new version....
+
+
+
+
+---------------------------------------
+rbac
+role based access control...
+
+https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+
+---------------------------------------------
+
+RBAC
+
+Role
+
+role is providing access to the pods & others on kubernets API calls.
+
+basic Roles has access to limited namespace...
+
+
+cluster role has access to all namespaces
+
+
+rolebinding and cluster binding
+
+the process of binding a user to the role i called rolebinding
+
+the process of binding a user to the role i called cluster binding
+
+
+
+
+
+
+
+
+
+
+
+
+

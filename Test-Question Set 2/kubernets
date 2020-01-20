@@ -1,0 +1,26 @@
+Kubernets will host a docker container with full autoscaling, logs, security & others....
+
+
+borg is used in google & kubernets came from there...
+
+refer this link for some container tools --> www.cncf.io
+
+install this 
+
+
+install kubectl
+install virtualbox
+https://www.virtualbox.org/wiki/Downloads
+Change the exe name to virtualbox
+
+install minikube
+https://kubernetes.io/docs/tasks/tools/install-minikube/
+
+Change the exe name to minikube
+minikube start
+
+or 
+
+minikube start --disk 1g --cpus 2 --memory 2048
+
+this will create a Virtual server in your laptop...

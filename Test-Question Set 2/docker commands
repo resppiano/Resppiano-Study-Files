@@ -1,0 +1,185 @@
+Commands: 
+
+docker --version
+docker ps --> list running containers
+docker ps -a --> List All containers which are even stopped....
+docker images  --> list of docker images...
+
+For more examples to get more sample, type "dockersamples" in dockerhub search area...
+----------------------------------------------------------
+
+docker pull dockersamples/static-site
+what is the diffrences between docker run vs docker pull??
+
+Ans : Docker pull will only fetch the image. but docker run will search locally, if nor found locally  then search , fetch the 
+images from docker hub & run the images. 
+
+C:\Users\kumar>docker run dockersamples/static-site
+Unable to find image 'dockersamples/static-site:latest' locally
+latest: Pulling from dockersamples/static-site
+fdd5d7827f33: Pull complete
+a3ed95caeb02: Pull complete
+716f7a5f3082: Pull complete
+7b10f03a0309: Pull complete
+aff3ab7e9c39: Pull complete
+Digest: sha256:daa686c61d7d239b7977e72157997489db49f316b9b9af3909d9f10fd28b2dec
+Status: Downloaded newer image for dockersamples/static-site:latest
+
+docker run -d -p 8080:80 -p 8082:443 dockersamples/static-site
+where 8080 is host port
+where 80 --> container port...So to access the static application type http://localhost:8080
+Ex:
+C:\Users\kumar>docker run -d -p 8084:80 dockersamples/static-site
+36f2dabe3819d73e61811796af89048f19770d838c3b8c7dc048d6c3927467b1
+
+Basically when you run the docker with "docker run -d -p 8080:80 -p 8082:443 dockersamples/static-site", this acts like a 
+temp storage...means the data will be deleted once the docker gets stopped....
+
+-----------------------------------------------------
+
+logout :
+
+docker logout
+
+Run the docker with mounting the volume.... 
+
+-----------------------------------------------------
+To stop the docker 
+
+docker stop <imageID>
+Ex : 
+C:\Users\kumar>docker stop 36f2dabe3819
+
+-----------------------------------------------------
+Delete the docker image  
+
+docker rm <imageID>
+
+
+Ex : C:\Users\kumar>docker rmi -f 6981fcf96164
+
+delete container when it is running, delete by force....
+
+docker rm -f <containerid>
+-------------------------------------------------------
+
+To pull a particular image
+
+Ex: for mysql
+
+docker pull mysql
+
+to pull particular version 5.6
+docker pull mysql:5.6
+-----------------------------------------------------------
+to mount a volume to the container.....
+
+docker run -d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=dheeraj -v D://docker:/var/lib/mysql mysql
+where -e = env variables....and -v is volume...
+---------------------------------------------------------------------------
+This is important 
+if you need to login to the container(like ssh for linux)
+
+docker exec -it <containerid> bash
+
+Ex : docker exec -it e8c9b9f1c0f8 bash
+
+or docker exec -it e8c9b9f1c0f8 sh
+----------------------------------------------------------------
+to connect to the mysql which is a  container, type
+mysql -u<root> -p<password>
+Ex:
+mysql -uroot -pdheeraj
+----------------------------------------------------------
+exit --> used to move away from containers...
+------------------------------------------------------------
+Docker Networking
+
+if you try ifconfig, you should see docker 0 network in linux
+
+
+Gets information of container information
+docker inspect 9906df729e0f
+
+the default networking for docker container is bridge...
+
+If you need to establish connectivity between 2 containers
+Ex : one container is frount end container & its need to connect to the second container which is myssql container...
+
+then 
+
+docker run --net=host -d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=himanshu -v /home/himanshu/mysql:/var/lib/mysql mysql
+
+where "--net=host" will act like localhost...
+
+so in the application web.config, for DB connection, you can use localhost:<mysqlportnumber>..
+
+Note : dont use the ipconfig , as it will dynamically change....
+
+------------------------------------------------------------------------------------
+
+how to create an Docker image
+https://docs.docker.com/v17.09/engine/reference/builder/#from
+what id dockerfile?
+
+this file is mani fest file to create a docker image...
+
+Learn about :
+WORKDIR /home
+RUN COMMAND1  
+RUN COMMAND2  
+MAINTAINER kumar  
+EXPOSE 9000 
+EXPOSE 9090  
+COPY /home/test.sh /home1/test.sh  
+ENV key1=value1 
+COPY test.jar /home1/test.jar
+WORKDIR /   CMD ['']
+
+
+
+
+
+Ex:
+---
+From openjdk:latest
+MAINTAINER kumar
+EXPOSE 9000
+EXPOSE 9090
+CMD echo "hello"
+----
+
+please learn what is diffrences between entrypoint vs cmd in docker file.
+
+save it as kumar.dockerfile in /usr/home
+
+then
+
+docker build -t <imagename>:v1 PATH_TO_DOCKERFILE
+Ex : docker build -t kumarfirstimage:v1 /usr/home
+
+where kumarfirstimage:v1  --> image name : version
+--------------------------------------------------------------------------------
+how to move the docker image to the docker HUB
+docker login
+
+enter the user & password of docker hub
+
+docker tag <image name>:<version> <dockerreponame>/<imagename>:<version>
+Ex : docker tag kumarfirstimage:v1 kumarrepo/kumarfirstimage:v1
+docker push kumarrepo/kumarfirstimage:v1
+
+-------------------------------
+
+docker logs
+
+sudo docker logs <containerid>
+--------------------------
+its yaml format...its like cloudformation template to create multiple dockers
+docker compose
+docker-compose up -d <path of docker compose file..>
+
+how to http vs https in containers.....
+
+
+
